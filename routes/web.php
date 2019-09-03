@@ -22,5 +22,9 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
+// GoogleAuth routes
 Route::get('/redirect', 'SocialAuthGoogleController@redirect');
 Route::get('/callback', 'SocialAuthGoogleController@callback');
+// GoogleAuth routes
+
+Route::get('/chat', 'ChatController@index');

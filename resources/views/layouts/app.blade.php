@@ -10,9 +10,6 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
     <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
 
-    <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}"></script>
-
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
@@ -73,5 +70,6 @@
         @yield('content')
     </main>
 </div>
+<script src="{{ asset('js/app.js') }}"></script>
 </body>
 </html>
