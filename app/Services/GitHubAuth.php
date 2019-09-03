@@ -1,21 +1,23 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Services;
+
 use App\Models\Color;
 use App\Models\User;
 use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Facades\Auth;
 use Exception;
-class SocialAuthGoogleController extends Controller
+
+class GitHubAuth implements Auth
 {
     public function redirect()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('github')->redirect();
     }
+
     public function callback()
     {
         try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
+            $googleUser = Socialite::driver('github')->user();
             $existUser = User::where('email', $googleUser->email)->first();
             if ($existUser) {
                 $existUser->color_id = Color::random()->id;
@@ -34,5 +36,19 @@ class SocialAuthGoogleController extends Controller
         } catch (Exception $e) {
             return 'error';
         }
+    }
+
+    private function findOrCreateUser($githubUser)
+    {
+        if ($authUser = User::where('github_id', $githubUser->id)->first()) {
+            return $authUser;
+        }
+
+        return User::create([
+            'name' => $githubUser->name,
+            'email' => $githubUser->email,
+            'github_id' => $githubUser->id,
+            'avatar' => $githubUser->avatar
+        ]);
     }
 }

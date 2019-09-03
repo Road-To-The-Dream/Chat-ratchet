@@ -75,6 +75,10 @@
                                         <img class="mr-2" src="{{ asset('img/google.png') }}" alt="">Login With Google
                                     </a>
 
+{{--                                    <a href="{{ url('/auth/github') }}" class="btn btn-primary">--}}
+{{--                                        <img class="mr-2" src="{{ asset('img/google.png') }}" alt="">Login With GitHub--}}
+{{--                                    </a>--}}
+
                                     @if (Route::has('password.request'))
                                         <a class="btn btn-link" href="{{ route('password.request') }}">
                                             {{ __('Forgot Your Password?') }}

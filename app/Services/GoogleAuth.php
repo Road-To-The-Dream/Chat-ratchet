@@ -1,17 +1,19 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Services;
+
 use App\Models\Color;
 use App\Models\User;
 use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Facades\Auth;
 use Exception;
-class SocialAuthGoogleController extends Controller
+
+class GoogleAuth implements Auth
 {
     public function redirect()
     {
         return Socialite::driver('google')->redirect();
     }
+
     public function callback()
     {
         try {

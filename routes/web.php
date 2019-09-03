@@ -27,4 +27,9 @@ Route::get('/redirect', 'SocialAuthGoogleController@redirect');
 Route::get('/callback', 'SocialAuthGoogleController@callback');
 // GoogleAuth routes
 
+//// GitHubAuth routes
+//Route::get('auth/github', 'AuthController@redirect');
+//Route::get('auth/github/callback', 'AuthController@callback');
+//// GitHubAuth routes
+
 Route::get('/chat', 'ChatController@index');
