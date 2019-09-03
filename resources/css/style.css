@@ -34,3 +34,11 @@ html, body {
     text-decoration: none;
     text-transform: uppercase;
 }
+
+#messages-canvas {
+    height: 60vh;
+    background-color: #e9ecef;
+    overflow-y: scroll;
+    word-wrap: break-word;
+    color: black;
+}

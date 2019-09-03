@@ -8,6 +8,7 @@ require('./bootstrap');
 
 window.Vue = require('vue');
 
+window.conn = new WebSocket('ws://localhost:8087');
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
@@ -19,7 +20,7 @@ window.Vue = require('vue');
 // const files = require.context('./', true, /\.vue$/i);
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
-Vue.component('chat-component', require('./components/ChatComponent.vue').default);
+Vue.component('chat-message-component', require('./components/ChatMessageComponent.vue').default);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -30,17 +31,3 @@ Vue.component('chat-component', require('./components/ChatComponent.vue').defaul
 const app = new Vue({
     el: '#app',
 });
-
-var conn = new WebSocket('ws://localhost:8087');
-
-conn.onopen = function(e) {
-    console.log("Connection established!");
-};
-
-conn.onmessage = function(e) {
-    console.log(e.data);
-};
-
-conn.onclose = function (e) {
-    console.log(e);
-};
