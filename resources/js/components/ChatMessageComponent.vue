@@ -13,6 +13,10 @@
                 <div class="col">
                     <input v-model="messageInput" ref="messageInput" @keyup.enter="enterClicked()" class="form-control mt-3" id="input-message" type="text"
                            placeholder="Введите сообщение" autofocus>
+
+                    <div v-if="error">
+                        <p class="mt-2 text-danger message-mute">{{ error }}</p>
+                    </div>
                 </div>
             </div>
 
@@ -30,10 +34,11 @@
 
         data() {
             return  {
-                messageInput: '',
+                messageInput: null,
                 messages: [],
                 usersOnline: [],
-                currentUser: {}
+                currentUser: {},
+                error: null
             }
         },
 
@@ -44,7 +49,6 @@
             this.currentUser = JSON.parse(this.user);
 
             conn.onopen = ((event) => {
-                //console.log(event);
             });
 
             conn.onmessage = ((event) => {
@@ -81,19 +85,33 @@
             });
 
             conn.onclose = (event) => {
-                //console.log(event.data);
             };
         },
 
         methods: {
             enterClicked() {
-                this.messageInput = '';
-                conn.send(
-                    JSON.stringify({
-                        'type': 'newMessage',
-                        'message': this.$refs.messageInput.value
-                    })
-                )
+                if (this.validateInput()) {
+                    this.messageInput = '';
+
+                    conn.send(
+                        JSON.stringify({
+                            'type': 'newMessage',
+                            'message': this.$refs.messageInput.value
+                        })
+                    );
+                }
+            },
+
+            validateInput() {
+                if (this.messageInput) {
+                    return true;
+                }
+
+                this.errors = null;
+
+                if (!this.messageInput) {
+                    this.error = 'Введите сообщение !';
+                }
             }
         }
     }

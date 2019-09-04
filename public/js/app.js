@@ -1723,14 +1723,19 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['usertoken', 'allmessages', 'user'],
   data: function data() {
     return {
-      messageInput: '',
+      messageInput: null,
       messages: [],
       usersOnline: [],
-      currentUser: {}
+      currentUser: {},
+      error: null
     };
   },
   created: function created() {
@@ -1740,8 +1745,7 @@ __webpack_require__.r(__webpack_exports__);
     this.messages = JSON.parse(this.allmessages);
     this.currentUser = JSON.parse(this.user);
 
-    conn.onopen = function (event) {//console.log(event);
-    };
+    conn.onopen = function (event) {};
 
     conn.onmessage = function (event) {
       var data = eval("(" + event.data + ")");
@@ -1780,16 +1784,28 @@ __webpack_require__.r(__webpack_exports__);
       }
     };
 
-    conn.onclose = function (event) {//console.log(event.data);
-    };
+    conn.onclose = function (event) {};
   },
   methods: {
     enterClicked: function enterClicked() {
-      this.messageInput = '';
-      conn.send(JSON.stringify({
-        'type': 'newMessage',
-        'message': this.$refs.messageInput.value
-      }));
+      if (this.validateInput()) {
+        this.messageInput = '';
+        conn.send(JSON.stringify({
+          'type': 'newMessage',
+          'message': this.$refs.messageInput.value
+        }));
+      }
+    },
+    validateInput: function validateInput() {
+      if (this.messageInput) {
+        return true;
+      }
+
+      this.errors = null;
+
+      if (!this.messageInput) {
+        this.error = 'Введите сообщение !';
+      }
     }
   }
 });
@@ -37311,7 +37327,15 @@ var render = function() {
                 _vm.messageInput = $event.target.value
               }
             }
-          })
+          }),
+          _vm._v(" "),
+          _vm.error
+            ? _c("div", [
+                _c("p", { staticClass: "mt-2 text-danger message-mute" }, [
+                  _vm._v(_vm._s(_vm.error))
+                ])
+              ])
+            : _vm._e()
         ])
       ]),
       _vm._v(" "),

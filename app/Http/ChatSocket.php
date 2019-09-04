@@ -5,6 +5,7 @@ namespace App\Http;
 use App\Models\Message;
 use App\Models\User;
 use App\Services\User as UserService;
+use App\Services\Validate;
 use Ratchet\ConnectionInterface;
 use Ratchet\MessageComponentInterface;
 
@@ -12,10 +13,12 @@ class ChatSocket implements MessageComponentInterface
 {
     protected $clients;
     private $userService;
+    private $validateService;
 
-    public function __construct(UserService $userService) {
+    public function __construct(UserService $userService, Validate $validateService) {
         $this->clients = new \SplObjectStorage;
         $this->userService = $userService;
+        $this->validateService = $validateService;
     }
 
     public function onOpen(ConnectionInterface $conn)
@@ -51,6 +54,7 @@ class ChatSocket implements MessageComponentInterface
 
         switch ($type) {
             case 'newMessage':
+                $this->validateService->validateMessage($data->message);
                 foreach ($this->clients as $client) {
                     $client->send(json_encode([
                         "type" => $type,
@@ -59,10 +63,9 @@ class ChatSocket implements MessageComponentInterface
                     ]));
                 }
 
-                $message = new Message();
-                $message->user_id = $conn->user->id;
-                $message->text = $data->message;
-                $message->save();
+                $conn->user->messages()->create([
+                    'text' => $data->message,
+                ]);
         }
 
         $numRecv = count($this->clients) - 1;
