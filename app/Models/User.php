@@ -16,7 +16,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'gravatar_img', 'color_id',
+        'name', 'email', 'password', 'token', 'gravatar_img', 'color_id',
     ];
 
     /**
@@ -41,8 +41,24 @@ class User extends Authenticatable
     {
         return $this->hasMany(Message::class);
     }
+
     public function color()
     {
         return $this->belongsTo(Color::class)->select(['id', 'name']);
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isBanned()
+    {
+        return $this->isBan === 1;
+    }
+
+    public function isMuted()
+    {
+        return $this->isMute === 1;
     }
 }

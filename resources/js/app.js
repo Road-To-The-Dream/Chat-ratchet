@@ -8,7 +8,10 @@ require('./bootstrap');
 
 window.Vue = require('vue');
 
-window.conn = new WebSocket('ws://localhost:8087');
+import VueChatScroll from 'vue-chat-scroll'
+
+Vue.use(VueChatScroll);
+
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
@@ -21,6 +24,8 @@ window.conn = new WebSocket('ws://localhost:8087');
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
 Vue.component('chat-message-component', require('./components/ChatMessageComponent.vue').default);
+Vue.component('online-user-component', require('./components/OnlineUserComponent.vue').default);
+Vue.component('members-component', require('./components/MembersComponent.vue').default);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

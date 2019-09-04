@@ -2,45 +2,74 @@
 
 namespace App\Http;
 
+use App\Models\Message;
+use App\Models\User;
+use App\Services\User as UserService;
 use Ratchet\ConnectionInterface;
-use Ratchet\Http\HttpServer;
 use Ratchet\MessageComponentInterface;
-use Ratchet\Server\IoServer;
-use Ratchet\WebSocket\WsServer;
 
 class ChatSocket implements MessageComponentInterface
 {
     protected $clients;
+    private $userService;
 
-    public function __construct() {
+    public function __construct(UserService $userService) {
         $this->clients = new \SplObjectStorage;
+        $this->userService = $userService;
     }
 
-    //открывается соединение новове
     public function onOpen(ConnectionInterface $conn)
     {
-        // Store the new connection to send messages to later
+        $userToken = $conn->httpRequest->getUri()->getQuery();
+
+        if (empty($userToken)) {
+            $conn->close();
+        }
+
+        $user = User::where('token', '=' , $userToken)->first();
+
+        $conn->user = $user;
         $this->clients->attach($conn);
+
+        $onlineUsers = $this->userService->getOnlineUsers($conn, $this->clients);
+
+        foreach ($this->clients as $client) {
+            $client->send(json_encode([
+                "type" => 'newUser',
+                "user" => $conn->user,
+                "onlineUsers" => $onlineUsers
+            ]));
+        }
 
         echo "New connection! ({$conn->resourceId})\n";
     }
 
-    //соединение приходит от клииента на сервер
-    public function onMessage(ConnectionInterface $from, $msg)
+    public function onMessage(ConnectionInterface $conn, $msg)
     {
+        $data = json_decode($msg);
+        $type = $data->type;
+
+        switch ($type) {
+            case 'newMessage':
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode([
+                        "type" => $type,
+                        "user" => json_encode($conn->user),
+                        "message" => $data->message
+                    ]));
+                }
+
+                $message = new Message();
+                $message->user_id = $conn->user->id;
+                $message->text = $data->message;
+                $message->save();
+        }
+
         $numRecv = count($this->clients) - 1;
         echo sprintf('Connection %d sending message "%s" to %d other connection%s' . "\n"
-            , $from->resourceId, $msg, $numRecv, $numRecv == 1 ? '' : 's');
-
-        foreach ($this->clients as $client) {
-            if ($from !== $client) {
-                // The sender is not the receiver, send to each client connected
-                $client->send($msg);
-            }
-        }
+            , $conn->resourceId, $msg, $numRecv, $numRecv == 1 ? '' : 's');
     }
 
-    //закрытие соединения
     public function onClose(ConnectionInterface $conn)
     {
         // The connection is closed, remove it, as we can no longer send it messages
@@ -48,15 +77,16 @@ class ChatSocket implements MessageComponentInterface
 
         foreach ($this->clients as $client) {
             $client->send(json_encode([
-                "type" => "socket",
-                "msg" => "Total Connected: " . count($this->clients)
+                "type" => "disconnect",
+                "userName" => $conn->user->name,
+                "message" => "Total Connected: " . count($this->clients),
+                "onlineUsers" => $this->userService->getOnlineUsers($conn, $this->clients)
             ]));
         }
 
         echo "Connection {$conn->resourceId} has disconnected\n";
     }
 
-    //если произошла какая-то ошибка
     public function onError(ConnectionInterface $conn, \Exception $e)
     {
         echo "An error has occurred: {$e->getMessage()}\n";

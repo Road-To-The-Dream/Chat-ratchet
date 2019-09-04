@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\ChatSocket;
+use App\Services\User;
 use Illuminate\Console\Command;
 use Ratchet\Http\HttpServer;
 use Ratchet\Server\IoServer;
@@ -43,11 +44,11 @@ class ChatServer extends Command
      */
     public function handle()
     {
-        $port = 8087;
+        $port = 8071;
         echo "Ratchet server started on port:$port \n";
         $loop = LoopFactory::create();
         $socket = new Reactor($port, $loop);
-        $server = new IoServer(new HttpServer(new WsServer(new ChatSocket())), $socket, $loop);
+        $server = new IoServer(new HttpServer(new WsServer(new ChatSocket(new User()))), $socket, $loop);
         $server->run();
     }
 }

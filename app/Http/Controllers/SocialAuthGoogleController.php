@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 use App\Models\Color;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Auth;
 use Exception;
+
 class SocialAuthGoogleController extends Controller
 {
     public function redirect()
@@ -26,6 +28,8 @@ class SocialAuthGoogleController extends Controller
                 $user->name = $googleUser->name;
                 $user->color_id = Color::random()->id;
                 $user->email = $googleUser->email;
+                $user->gravatar_img = 'http://www.gravatar.com/avatar/' . md5($googleUser->email) . '?d=robohash&s=50';
+                $user->token = Str::random(16);
                 $user->google_id = $googleUser->id;
                 $user->save();
                 Auth::loginUsingId($user->id);

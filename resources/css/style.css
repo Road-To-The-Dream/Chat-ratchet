@@ -42,3 +42,18 @@ html, body {
     word-wrap: break-word;
     color: black;
 }
+
+#messages-canvas::-webkit-scrollbar {
+    width: 4px;
+    height: 3px;
+}
+
+#messages-canvas::-webkit-scrollbar-track-piece {
+    background-color: #ffffff;
+}
+
+#messages-canvas::-webkit-scrollbar-thumb {
+    height: 50px;
+    background-color: #6a9ba0;
+    border-radius: 5px;
+}
