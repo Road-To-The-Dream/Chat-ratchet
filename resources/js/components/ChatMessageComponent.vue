@@ -24,7 +24,7 @@
             </div>
 
             <div class="col-4">
-                <online-user-component :usersOnline="usersOnline"></online-user-component>
+                <online-user-component :usersOnline="usersOnline" :currentUser="currentUser"></online-user-component>
             </div>
         </div>
     </div>
@@ -46,7 +46,7 @@
         },
 
         created() {
-            window.conn = new WebSocket('ws://localhost:8071?' + this.usertoken);
+            window.conn = new WebSocket('ws://localhost:8073?' + this.usertoken);
 
             this.messages = JSON.parse(this.allmessages);
             this.currentUser = JSON.parse(this.user);
@@ -79,11 +79,7 @@
                         break;
 
                     case 'disconnect':
-                        this.usersOnline.filter(user => {
-                            this.usersOnline = data.onlineUsers.filter(item =>
-                                user.id === item.id
-                            )
-                        });
+                        this.usersOnline = data.onlineUsers;
                         break;
 
                     case 'error':

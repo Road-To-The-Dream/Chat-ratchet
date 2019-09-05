@@ -45,7 +45,7 @@ class ChatServer extends Command
      */
     public function handle()
     {
-        $port = 8071;
+        $port = 8073;
         echo "Ratchet server started on port:$port \n";
         $loop = LoopFactory::create();
         $socket = new Reactor($port, $loop);

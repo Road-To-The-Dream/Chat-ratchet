@@ -26,6 +26,8 @@ Vue.use(VueChatScroll);
 Vue.component('chat-message-component', require('./components/ChatMessageComponent.vue').default);
 Vue.component('online-user-component', require('./components/OnlineUserComponent.vue').default);
 Vue.component('members-component', require('./components/MembersComponent.vue').default);
+Vue.component('btn-ban-component', require('./components/BtnBanComponent.vue').default);
+Vue.component('btn-mute-component', require('./components/BtnMuteComponent.vue').default);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

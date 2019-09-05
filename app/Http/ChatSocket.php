@@ -33,6 +33,16 @@ class ChatSocket implements MessageComponentInterface
         $conn->user = $user;
         $this->clients->attach($conn);
 
+        $tokens = $this->getTokensOnlineUsers();
+        $on = User::whereIn('token', $tokens)->get();
+        foreach ($this->clients as $client) {
+            foreach ($on as $user) {
+                if ($client->user->token === $user->token) {
+                    $client->user = $user;
+                }
+            }
+        }
+
         $onlineUsers = $this->userService->getOnlineUsers($this->clients);
 
         foreach ($this->clients as $client) {
@@ -50,6 +60,7 @@ class ChatSocket implements MessageComponentInterface
     {
         $data = json_decode($msg);
         $type = $data->type;
+        $user = User::findOrFail($data->userToken);
 
         switch ($type) {
             case 'newMessage':
@@ -68,6 +79,20 @@ class ChatSocket implements MessageComponentInterface
                 } catch (\Exception $exception) {
                     $this->sendResponse($conn, 'error', $exception->getMessage());
                 }
+
+                break;
+            case 'ban':
+                if ($conn->user->isAdmin()) {
+                    $user->isBan = $data->value;
+                    $user->save();
+                }
+                break;
+            case 'mute':
+                if ($conn->user->isAdmin()) {
+                    $user->isMute = $data->value;
+                    $user->save();
+                }
+                break;
         }
 
         $numRecv = count($this->clients) - 1;
@@ -111,5 +136,16 @@ class ChatSocket implements MessageComponentInterface
                 "message" => $message
             ]));
         }
+    }
+
+    public function getTokensOnlineUsers()
+    {
+        $tokens = [];
+
+        foreach ($this->clients as $client) {
+            array_push($tokens, $client->user->token);
+        }
+
+        return $tokens;
     }
 }
