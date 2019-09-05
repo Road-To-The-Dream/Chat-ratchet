@@ -7,6 +7,8 @@
 </template>
 
 <script>
+    import {eventEmitter} from "../app";
+
     export default {
         props: ['currentUser'],
 
@@ -18,12 +20,19 @@
         },
 
         created() {
+            eventEmitter.$on('testEmit', (data) => {
+                if (this.currentUser.name === data.name) {
+                    this.btnBanValue = 'UnBan';
+                    this.currentUser.isBan = !this.currentUser.isBan;
+                }
+            });
+
             this.isBan();
         },
 
         methods: {
             ban() {
-                this.currentUser.isBan = !this.currentUser.isBan;
+                eventEmitter.$emit('testEmit', this.currentUser);
 
                 this.isBan();
 

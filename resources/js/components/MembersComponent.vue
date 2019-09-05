@@ -13,6 +13,8 @@
                             <div class="col-7 align-self-end">{{ member.name }}</div>
                             <div class="col-3 text-right align-self-end">{{ member.role }}</div>
                         </div>
+                        <btn-ban-component :currentUser="member"></btn-ban-component>
+                        <btn-mute-component :currentUser="member"></btn-mute-component>
                     </div>
                 </div>
             </div>

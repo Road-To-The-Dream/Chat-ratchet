@@ -85,12 +85,16 @@ class ChatSocket implements MessageComponentInterface
                 if ($conn->user->isAdmin()) {
                     $user->isBan = $data->value;
                     $user->save();
+
+                    $this->sendResponse($conn, 'ban', $data->userToken);
                 }
                 break;
             case 'mute':
                 if ($conn->user->isAdmin()) {
                     $user->isMute = $data->value;
                     $user->save();
+
+                    $this->sendResponse($conn, 'mute', $data->userToken);
                 }
                 break;
         }

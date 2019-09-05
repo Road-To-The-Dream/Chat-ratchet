@@ -23,6 +23,7 @@ Vue.use(VueChatScroll);
 // const files = require.context('./', true, /\.vue$/i);
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
+Vue.component('ban-component', require('./components/BanComponent.vue').default);
 Vue.component('chat-message-component', require('./components/ChatMessageComponent.vue').default);
 Vue.component('online-user-component', require('./components/OnlineUserComponent.vue').default);
 Vue.component('members-component', require('./components/MembersComponent.vue').default);
@@ -34,6 +35,8 @@ Vue.component('btn-mute-component', require('./components/BtnMuteComponent.vue')
  * the page. Then, you may begin adding components to this application
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
+
+export const eventEmitter = new Vue();
 
 const app = new Vue({
     el: '#app',

@@ -78,6 +78,18 @@
                         }
                         break;
 
+                    case 'ban':
+                        if (data.message === this.usertoken) {
+                            location.reload();
+                        }
+                        break;
+
+                    case 'mute':
+                        if (data.message === this.usertoken) {
+                            location.reload();
+                        }
+                        break;
+
                     case 'disconnect':
                         this.usersOnline = data.onlineUsers;
                         break;
