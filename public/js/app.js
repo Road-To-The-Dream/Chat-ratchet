@@ -1727,6 +1727,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['usertoken', 'allmessages', 'user'],
   data: function data() {
@@ -1757,6 +1760,7 @@ __webpack_require__.r(__webpack_exports__);
           _this.messages.push({
             gravatar_img: user.gravatar_img,
             user_name: user.name,
+            user_color: user.color.name,
             text: data.message
           });
 
@@ -1781,6 +1785,10 @@ __webpack_require__.r(__webpack_exports__);
           });
 
           break;
+
+        case 'error':
+          _this.error = data.message;
+          break;
       }
     };
 
@@ -1798,10 +1806,11 @@ __webpack_require__.r(__webpack_exports__);
     },
     validateInput: function validateInput() {
       if (this.messageInput) {
+        this.error = null;
         return true;
       }
 
-      this.errors = null;
+      this.error = null;
 
       if (!this.messageInput) {
         this.error = 'Введите сообщение !';
@@ -37267,31 +37276,42 @@ var render = function() {
   return _c("div", [
     _c("div", { staticClass: "row" }, [
       _c("div", { staticClass: "col-8" }, [
-        _c("div", { staticClass: "col-12" }, [
-          _c(
-            "div",
-            {
-              directives: [{ name: "chat-scroll", rawName: "v-chat-scroll" }],
-              staticClass: "col users border scrollbar",
-              attrs: { id: "messages-canvas" }
-            },
-            _vm._l(_vm.messages, function(message) {
-              return _c("div", [
-                _c("img", { attrs: { src: message.gravatar_img, alt: "" } }),
-                _vm._v(
-                  " " +
-                    _vm._s(message.user_name) +
-                    " : " +
-                    _vm._s(message.text) +
-                    "\n                    "
+        _c(
+          "div",
+          {
+            directives: [{ name: "chat-scroll", rawName: "v-chat-scroll" }],
+            staticClass: "users border scrollbar pb-2",
+            attrs: { id: "messages-canvas" }
+          },
+          _vm._l(_vm.messages, function(message) {
+            return _c("div", [
+              _c("div", { staticClass: "row ml-2 mr-2" }, [
+                _c("div", { staticClass: "col-1 pl-0" }, [
+                  _c("img", {
+                    staticClass: "rounded-circle",
+                    attrs: { src: message.gravatar_img, alt: "" }
+                  })
+                ]),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  {
+                    staticClass: "col align-self-end",
+                    style: { color: message.user_color }
+                  },
+                  [
+                    _vm._v(
+                      _vm._s(message.user_name) + " : " + _vm._s(message.text)
+                    )
+                  ]
                 )
               ])
-            }),
-            0
-          )
-        ]),
+            ])
+          }),
+          0
+        ),
         _vm._v(" "),
-        _c("div", { staticClass: "col" }, [
+        _c("div", [
           _c("input", {
             directives: [
               {

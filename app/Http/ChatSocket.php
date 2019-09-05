@@ -2,7 +2,6 @@
 
 namespace App\Http;
 
-use App\Models\Message;
 use App\Models\User;
 use App\Services\User as UserService;
 use App\Services\Validate;
@@ -34,7 +33,7 @@ class ChatSocket implements MessageComponentInterface
         $conn->user = $user;
         $this->clients->attach($conn);
 
-        $onlineUsers = $this->userService->getOnlineUsers($conn, $this->clients);
+        $onlineUsers = $this->userService->getOnlineUsers($this->clients);
 
         foreach ($this->clients as $client) {
             $client->send(json_encode([
@@ -54,18 +53,21 @@ class ChatSocket implements MessageComponentInterface
 
         switch ($type) {
             case 'newMessage':
-                $this->validateService->validateMessage($data->message);
-                foreach ($this->clients as $client) {
-                    $client->send(json_encode([
-                        "type" => $type,
-                        "user" => json_encode($conn->user),
-                        "message" => $data->message
-                    ]));
-                }
+                try {
+                    $timeDifference = $this->validateService->validateDate($conn) >= Validate::SECOND_BETWEEN_MESSAGE;
 
-                $conn->user->messages()->create([
-                    'text' => $data->message,
-                ]);
+                    if (!$conn->user->isBanned() && !$conn->user->isMuted() && $timeDifference) {
+                        $this->validateService->validateMessage($data->message);
+
+                        $this->sendResponse($conn,'newMessage', $data->message);
+
+                        $conn->user->messages()->create([
+                            'text' => $data->message,
+                        ]);
+                    }
+                } catch (\Exception $exception) {
+                    $this->sendResponse($conn, 'error', $exception->getMessage());
+                }
         }
 
         $numRecv = count($this->clients) - 1;
@@ -75,15 +77,16 @@ class ChatSocket implements MessageComponentInterface
 
     public function onClose(ConnectionInterface $conn)
     {
-        // The connection is closed, remove it, as we can no longer send it messages
         $this->clients->detach($conn);
+
+        $onlineUsers = $this->userService->getOnlineUsers($this->clients);
 
         foreach ($this->clients as $client) {
             $client->send(json_encode([
                 "type" => "disconnect",
                 "userName" => $conn->user->name,
                 "message" => "Total Connected: " . count($this->clients),
-                "onlineUsers" => $this->userService->getOnlineUsers($conn, $this->clients)
+                "onlineUsers" => $onlineUsers
             ]));
         }
 
@@ -95,5 +98,18 @@ class ChatSocket implements MessageComponentInterface
         echo "An error has occurred: {$e->getMessage()}\n";
 
         $conn->close();
+    }
+
+    public function sendResponse($conn, $type, $message)
+    {
+        $user = json_encode(User::with('color')->where('id', $conn->user->id)->first());
+
+        foreach ($this->clients as $client) {
+            $client->send(json_encode([
+                "type" => $type,
+                "user" => $user,
+                "message" => $message
+            ]));
+        }
     }
 }

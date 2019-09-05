@@ -4,7 +4,7 @@ namespace App\Services;
 
 class User
 {
-    public function getOnlineUsers($conn, $clients)
+    public function getOnlineUsers($clients)
     {
         $onlineUsers = [];
 

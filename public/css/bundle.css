@@ -37,7 +37,7 @@ html, body {
 
 #messages-canvas {
     height: 60vh;
-    background-color: #e9ecef;
+    background-color: #bfbfbf;
     overflow-y: scroll;
     word-wrap: break-word;
     color: black;
