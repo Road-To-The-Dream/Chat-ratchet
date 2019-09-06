@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Models\Color;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Exception;
 
-class GitHubAuth implements Auth
+class GitHubAuthService implements AuthService
 {
     public function redirect()
     {
@@ -17,18 +19,20 @@ class GitHubAuth implements Auth
     public function callback()
     {
         try {
-            $googleUser = Socialite::driver('github')->user();
-            $existUser = User::where('email', $googleUser->email)->first();
+            $gitHubUser = Socialite::driver('github')->stateless()->user();
+            $existUser = User::where('email', $gitHubUser->email)->first();
             if ($existUser) {
                 $existUser->color_id = Color::random()->id;
                 $existUser->save();
                 Auth::loginUsingId($existUser->id);
             } else {
                 $user = new User();
-                $user->name = $googleUser->name;
+                $user->name = $gitHubUser->name;
                 $user->color_id = Color::random()->id;
-                $user->email = $googleUser->email;
-                $user->google_id = $googleUser->id;
+                $user->email = $gitHubUser->email;
+                $user->gravatar_img = 'http://www.gravatar.com/avatar/' . md5($gitHubUser->email) . '?d=robohash&s=50';
+                $user->token = Str::random(16);
+                $user->github_id = $gitHubUser->id;
                 $user->save();
                 Auth::loginUsingId($user->id);
             }

@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Auth;
+use App\Services\AuthService;
 
 class AuthController extends Controller
 {
     private $authService;
 
-    public function __construct(Auth $objAuth)
+    public function __construct(AuthService $objAuth)
     {
         $this->authService = $objAuth;
     }

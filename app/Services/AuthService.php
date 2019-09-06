@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-interface Auth
+interface AuthService
 {
     public function redirect();
 

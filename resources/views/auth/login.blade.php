@@ -71,19 +71,13 @@
                                         <img class="mr-2" src="{{ asset('img/login.png') }}" alt="">Login
                                     </button>
 
-                                    <a href="{{ url('/redirect') }}" class="btn btn-primary">
-                                        <img class="mr-2" src="{{ asset('img/google.png') }}" alt="">Login With Google
+                                    <a href="{{ url('/redirect?auth=google') }}" class="ml-2">
+                                        <img class="mr-2" src="{{ asset('img/google.png') }}" alt="">
                                     </a>
 
-{{--                                    <a href="{{ url('/auth/github') }}" class="btn btn-primary">--}}
-{{--                                        <img class="mr-2" src="{{ asset('img/google.png') }}" alt="">Login With GitHub--}}
-{{--                                    </a>--}}
-
-                                    @if (Route::has('password.request'))
-                                        <a class="btn btn-link" href="{{ route('password.request') }}">
-                                            {{ __('Forgot Your Password?') }}
-                                        </a>
-                                    @endif
+                                    <a href="{{ url('/auth/github?auth=github') }}">
+                                        <img class="mr-2" src="{{ asset('img/github.png') }}" alt="">
+                                    </a>
                                 </div>
                             </div>
                         </form>

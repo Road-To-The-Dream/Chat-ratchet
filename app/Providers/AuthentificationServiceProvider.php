@@ -3,9 +3,9 @@
 namespace App\Providers;
 
 use App\Http\Controllers\AuthController;
-use App\Services\Auth;
-use App\Services\GitHubAuth;
-use App\Services\GoogleAuth;
+use App\Services\AuthService;
+use App\Services\GitHubAuthService;
+use App\Services\GoogleAuthService;
 use Illuminate\Support\ServiceProvider;
 
 class AuthentificationServiceProvider extends ServiceProvider
@@ -19,12 +19,12 @@ class AuthentificationServiceProvider extends ServiceProvider
     {
         $auth = $this->app->make('request')->get('auth');
 
-        $this->app->singleton(Auth::class, function ($app) use ($auth){
-            if($auth === 'google') {
-                return new GoogleAuth();
+        $this->app->singleton(AuthService::class, function ($app) use ($auth){
+            if($auth === 'google' || $_SERVER['PATH_INFO'] === '/callback') {
+                return new GoogleAuthService();
             }
 
-            return new GitHubAuth();
+            return new GitHubAuthService();
         });
     }
 
@@ -40,6 +40,6 @@ class AuthentificationServiceProvider extends ServiceProvider
 
     public function provides()
     {
-        return [Auth::class];
+        return [AuthService::class];
     }
 }
