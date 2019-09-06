@@ -7,6 +7,8 @@
 </template>
 
 <script>
+    import {eventEmitter} from "../app";
+
     export default {
         props: ['currentUser'],
 
@@ -17,30 +19,34 @@
         },
 
         created() {
-            this.isMute();
+            eventEmitter.$on('MUTE', (data) => {
+                if (this.currentUser.name !== data.name) {
+                    return false;
+                }
+
+                this.btnMuteValue = 'UnMute';
+                this.currentUser.isMute = !this.currentUser.isMute;
+                this.isMute();
+            });
         },
 
         methods: {
             mute() {
-                this.currentUser.isMute = !this.currentUser.isMute;
+                eventEmitter.$emit('MUTE', this.currentUser);
 
                 this.isMute();
 
                 conn.send(
                     JSON.stringify({
                         'type': 'mute',
-                        'userToken': this.currentUser.token,
+                        'userId': this.currentUser.id,
                         'value': this.currentUser.isMute
                     })
                 );
             },
 
             isMute() {
-                if (this.currentUser.isMute) {
-                    this.btnMuteValue = 'UnMute';
-                } else {
-                    this.btnMuteValue = 'Mute';
-                }
+                this.btnMuteValue = this.currentUser.isMute?'UnMute':'Mute';
             },
         }
     };

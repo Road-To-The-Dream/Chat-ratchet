@@ -1711,14 +1711,13 @@ __webpack_require__.r(__webpack_exports__);
   props: ['currentUser'],
   data: function data() {
     return {
-      btnBanValue: 'Ban',
-      btnMuteValue: 'Mute'
+      btnBanValue: 'Ban'
     };
   },
   created: function created() {
     var _this = this;
 
-    _app__WEBPACK_IMPORTED_MODULE_0__["eventEmitter"].$on('testEmit', function (data) {
+    _app__WEBPACK_IMPORTED_MODULE_0__["eventEmitter"].$on('BAN', function (data) {
       if (_this.currentUser.name === data.name) {
         _this.btnBanValue = 'UnBan';
         _this.currentUser.isBan = !_this.currentUser.isBan;
@@ -1728,11 +1727,11 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     ban: function ban() {
-      _app__WEBPACK_IMPORTED_MODULE_0__["eventEmitter"].$emit('testEmit', this.currentUser);
+      _app__WEBPACK_IMPORTED_MODULE_0__["eventEmitter"].$emit('BAN', this.currentUser);
       this.isBan();
       conn.send(JSON.stringify({
         'type': 'ban',
-        'userToken': this.currentUser.token,
+        'userId': this.currentUser.id,
         'value': this.currentUser.isBan
       }));
     },
@@ -1757,6 +1756,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../app */ "./resources/js/app.js");
 //
 //
 //
@@ -1765,6 +1765,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['currentUser'],
   data: function data() {
@@ -1773,24 +1774,31 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   created: function created() {
-    this.isMute();
+    var _this = this;
+
+    _app__WEBPACK_IMPORTED_MODULE_0__["eventEmitter"].$on('MUTE', function (data) {
+      if (_this.currentUser.name !== data.name) {
+        return false;
+      }
+
+      _this.btnMuteValue = 'UnMute';
+      _this.currentUser.isMute = !_this.currentUser.isMute;
+
+      _this.isMute();
+    });
   },
   methods: {
     mute: function mute() {
-      this.currentUser.isMute = !this.currentUser.isMute;
+      _app__WEBPACK_IMPORTED_MODULE_0__["eventEmitter"].$emit('MUTE', this.currentUser);
       this.isMute();
       conn.send(JSON.stringify({
         'type': 'mute',
-        'userToken': this.currentUser.token,
+        'userId': this.currentUser.id,
         'value': this.currentUser.isMute
       }));
     },
     isMute: function isMute() {
-      if (this.currentUser.isMute) {
-        this.btnMuteValue = 'UnMute';
-      } else {
-        this.btnMuteValue = 'Mute';
-      }
+      this.btnMuteValue = this.currentUser.isMute ? 'UnMute' : 'Mute';
     }
   }
 });
@@ -1847,24 +1855,27 @@ __webpack_require__.r(__webpack_exports__);
       messages: [],
       usersOnline: [],
       currentUser: {},
-      error: null
+      error: null,
+      mutedUser: false
     };
   },
   created: function created() {
     var _this = this;
 
-    window.conn = new WebSocket('ws://localhost:8073?' + this.usertoken);
+    window.conn = new WebSocket('ws://localhost:8078?' + this.usertoken);
     this.messages = JSON.parse(this.allmessages);
     this.currentUser = JSON.parse(this.user);
 
     conn.onopen = function (event) {};
 
     conn.onmessage = function (event) {
-      var data = eval("(" + event.data + ")");
+      // console.log('json', JSON.parse(event.data));
+      var data = JSON.parse(event.data); // console.log('user.name', aaa.user.name);
+      // let data = eval("(" + event.data + ")");
 
       switch (data.type) {
         case 'newMessage':
-          var user = JSON.parse(data.user);
+          var user = data.user;
 
           _this.messages.push({
             gravatar_img: user.gravatar_img,
@@ -1875,42 +1886,37 @@ __webpack_require__.r(__webpack_exports__);
 
           break;
 
+        case 'disconnect':
         case 'newUser':
-          if (data.user.token === _this.usertoken) {
-            data.onlineUsers.forEach(function (user) {
-              _this.usersOnline.push(user);
-            });
-          } else {
-            _this.usersOnline.push(data.user);
-          }
-
+          _this.usersOnline = data.onlineUsers;
           break;
 
         case 'ban':
-          if (data.message === _this.usertoken) {
+          if (data.message === _this.currentUser.id) {
             location.reload();
           }
 
           break;
 
         case 'mute':
-          if (data.message === _this.usertoken) {
-            location.reload();
+          if (data.message === _this.currentUser.id) {
+            _this.mutedUser = !_this.mutedUser;
           }
 
           break;
 
-        case 'disconnect':
-          _this.usersOnline = data.onlineUsers;
-          break;
-
         case 'error':
-          _this.error = data.message;
+          if (data.user.id === _this.currentUser.id) {
+            _this.error = data.message;
+          }
+
           break;
       }
     };
 
-    conn.onclose = function (event) {};
+    conn.onclose = function (event) {
+      location.reload();
+    };
   },
   methods: {
     enterClicked: function enterClicked() {
@@ -1918,7 +1924,8 @@ __webpack_require__.r(__webpack_exports__);
         this.messageInput = '';
         conn.send(JSON.stringify({
           'type': 'newMessage',
-          'message': this.$refs.messageInput.value
+          'message': this.$refs.messageInput.value,
+          'userId': this.currentUser.id
         }));
       }
     },
@@ -1948,8 +1955,6 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-//
-//
 //
 //
 //
@@ -37567,52 +37572,54 @@ var render = function() {
           0
         ),
         _vm._v(" "),
-        _c("div", [
-          _c("input", {
-            directives: [
-              {
-                name: "model",
-                rawName: "v-model",
-                value: _vm.messageInput,
-                expression: "messageInput"
-              }
-            ],
-            ref: "messageInput",
-            staticClass: "form-control mt-3",
-            attrs: {
-              id: "input-message",
-              type: "text",
-              placeholder: "Введите сообщение",
-              autofocus: ""
-            },
-            domProps: { value: _vm.messageInput },
-            on: {
-              keyup: function($event) {
-                if (
-                  !$event.type.indexOf("key") &&
-                  _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
-                ) {
-                  return null
+        !_vm.mutedUser
+          ? _c("div", [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.messageInput,
+                    expression: "messageInput"
+                  }
+                ],
+                ref: "messageInput",
+                staticClass: "form-control mt-3",
+                attrs: {
+                  id: "input-message",
+                  type: "text",
+                  placeholder: "Введите сообщение",
+                  autofocus: ""
+                },
+                domProps: { value: _vm.messageInput },
+                on: {
+                  keyup: function($event) {
+                    if (
+                      !$event.type.indexOf("key") &&
+                      _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
+                    ) {
+                      return null
+                    }
+                    return _vm.enterClicked()
+                  },
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.messageInput = $event.target.value
+                  }
                 }
-                return _vm.enterClicked()
-              },
-              input: function($event) {
-                if ($event.target.composing) {
-                  return
-                }
-                _vm.messageInput = $event.target.value
-              }
-            }
-          }),
-          _vm._v(" "),
-          _vm.error
-            ? _c("div", [
-                _c("p", { staticClass: "mt-2 text-danger message-mute" }, [
-                  _vm._v(_vm._s(_vm.error))
-                ])
-              ])
-            : _vm._e()
-        ])
+              }),
+              _vm._v(" "),
+              _vm.error
+                ? _c("div", [
+                    _c("p", { staticClass: "mt-2 text-danger message-mute" }, [
+                      _vm._v(_vm._s(_vm.error))
+                    ])
+                  ])
+                : _vm._e()
+            ])
+          : _vm._e()
       ]),
       _vm._v(" "),
       _c(
@@ -37663,39 +37670,35 @@ var render = function() {
         _vm._l(_vm.allMembers, function(member) {
           return _c(
             "div",
-            { staticClass: "shadow-sm pl-3 pr-3 pb-3 mb-3 bg-white rounded" },
+            { staticClass: "shadow-sm pl-3 pr-3 pb-2 mb-3 bg-white rounded" },
             [
-              _c("div", { staticClass: "row" }, [
-                _c(
-                  "div",
-                  { staticClass: "col" },
-                  [
-                    _c("div", { staticClass: "row" }, [
-                      _c("div", { staticClass: "col-2 p-0" }, [
-                        _c("img", {
-                          staticClass: "rounded-circle",
-                          attrs: { src: member.gravatar_img, alt: "" }
-                        })
-                      ]),
-                      _vm._v(" "),
-                      _c("div", { staticClass: "col-7 align-self-end" }, [
-                        _vm._v(_vm._s(member.name))
-                      ]),
-                      _vm._v(" "),
-                      _c(
-                        "div",
-                        { staticClass: "col-3 text-right align-self-end" },
-                        [_vm._v(_vm._s(member.role))]
-                      )
-                    ]),
-                    _vm._v(" "),
-                    _c("btn-ban-component", { attrs: { currentUser: member } }),
-                    _vm._v(" "),
-                    _c("btn-mute-component", { attrs: { currentUser: member } })
-                  ],
-                  1
-                )
-              ])
+              _c("div", { staticClass: "row mb-3" }, [
+                _c("div", { staticClass: "col-2 p-0" }, [
+                  _c("img", {
+                    staticClass: "rounded-circle",
+                    attrs: { src: member.gravatar_img, alt: "" }
+                  })
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "col-7 align-self-end" }, [
+                  _vm._v(_vm._s(member.name))
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "col-3 text-right align-self-end" }, [
+                  _vm._v(_vm._s(member.role))
+                ])
+              ]),
+              _vm._v(" "),
+              _c(
+                "div",
+                { staticClass: "row user-status" },
+                [
+                  _c("btn-ban-component", { attrs: { currentUser: member } }),
+                  _vm._v(" "),
+                  _c("btn-mute-component", { attrs: { currentUser: member } })
+                ],
+                1
+              )
             ]
           )
         })

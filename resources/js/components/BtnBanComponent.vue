@@ -14,13 +14,12 @@
 
         data() {
             return {
-                btnBanValue: 'Ban',
-                btnMuteValue: 'Mute'
+                btnBanValue: 'Ban'
             }
         },
 
         created() {
-            eventEmitter.$on('testEmit', (data) => {
+            eventEmitter.$on('BAN', (data) => {
                 if (this.currentUser.name === data.name) {
                     this.btnBanValue = 'UnBan';
                     this.currentUser.isBan = !this.currentUser.isBan;
@@ -32,14 +31,14 @@
 
         methods: {
             ban() {
-                eventEmitter.$emit('testEmit', this.currentUser);
+                eventEmitter.$emit('BAN', this.currentUser);
 
                 this.isBan();
 
                 conn.send(
                     JSON.stringify({
                         'type': 'ban',
-                        'userToken': this.currentUser.token,
+                        'userId': this.currentUser.id,
                         'value': this.currentUser.isBan
                     })
                 );

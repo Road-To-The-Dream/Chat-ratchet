@@ -13,7 +13,7 @@
                     </div>
                 </div>
 
-                <div>
+                <div v-if="!mutedUser">
                     <input v-model="messageInput" ref="messageInput" @keyup.enter="enterClicked()" class="form-control mt-3" id="input-message" type="text"
                            placeholder="Введите сообщение" autofocus>
 
@@ -41,12 +41,13 @@
                 messages: [],
                 usersOnline: [],
                 currentUser: {},
-                error: null
+                error: null,
+                mutedUser: false
             }
         },
 
         created() {
-            window.conn = new WebSocket('ws://localhost:8073?' + this.usertoken);
+            window.conn = new WebSocket('ws://localhost:8078?' + this.usertoken);
 
             this.messages = JSON.parse(this.allmessages);
             this.currentUser = JSON.parse(this.user);
@@ -55,11 +56,15 @@
             });
 
             conn.onmessage = ((event) => {
-                let data = eval("(" + event.data + ")");
+                // console.log('json', JSON.parse(event.data));
+                const data = JSON.parse(event.data);
+                // console.log('user.name', aaa.user.name);
+
+                // let data = eval("(" + event.data + ")");
 
                 switch (data.type) {
                     case 'newMessage':
-                        let user = JSON.parse(data.user);
+                        let user = data.user;
                             this.messages.push({
                                 gravatar_img: user.gravatar_img,
                                 user_name: user.name,
@@ -68,39 +73,33 @@
                             });
                         break;
 
+                    case 'disconnect':
                     case 'newUser':
-                        if (data.user.token === this.usertoken) {
-                            data.onlineUsers.forEach((user) => {
-                                this.usersOnline.push(user);
-                            });
-                        } else {
-                            this.usersOnline.push(data.user);
-                        }
+                        this.usersOnline = data.onlineUsers;
                         break;
 
                     case 'ban':
-                        if (data.message === this.usertoken) {
+                        if (data.message === this.currentUser.id) {
                             location.reload();
                         }
                         break;
 
                     case 'mute':
-                        if (data.message === this.usertoken) {
-                            location.reload();
+                        if (data.message === this.currentUser.id) {
+                            this.mutedUser = !this.mutedUser;
                         }
                         break;
 
-                    case 'disconnect':
-                        this.usersOnline = data.onlineUsers;
-                        break;
-
                     case 'error':
-                        this.error = data.message;
+                        if (data.user.id === this.currentUser.id) {
+                            this.error = data.message;
+                        }
                         break;
                 }
             });
 
             conn.onclose = (event) => {
+                location.reload();
             };
         },
 
@@ -112,7 +111,8 @@
                     conn.send(
                         JSON.stringify({
                             'type': 'newMessage',
-                            'message': this.$refs.messageInput.value
+                            'message': this.$refs.messageInput.value,
+                            'userId': this.currentUser.id
                         })
                     );
                 }

@@ -5,17 +5,18 @@ namespace App\Services;
 use App\Models\Message;
 use Carbon\Carbon;
 
-class Validate
+class ValidateService
 {
     const SECOND_BETWEEN_MESSAGE = 15;
 
     public function validateMessage($message)
     {
-        if (mb_strlen($message) > 200) {
+        $message  = trim($message);
+
+        if (mb_strlen($message) > 20) {
             throw new \Exception('Длина сообщения превышает 200 символов !');
         }
 
-        $message  = trim($message);
         $message  = stripslashes($message);
 
         return htmlspecialchars($message);
@@ -23,7 +24,16 @@ class Validate
 
     public function validateDate($conn)
     {
-        $dateLastMessage = Message::where('user_id', $conn->user->id)->get(['id', 'created_at'])->last();
+        if ($this->getTimeDifferenceMessage($conn) < self::SECOND_BETWEEN_MESSAGE) {
+            throw new \Exception('Интервал между сообщениями 15 секунд !');
+        }
+
+        return true;
+    }
+
+    public function getTimeDifferenceMessage($conn)
+    {
+        $dateLastMessage = Message::where('user_id', $conn->user->id)->get(['created_at'])->last();
 
         if ($dateLastMessage) {
             $currentDate = Carbon::now();

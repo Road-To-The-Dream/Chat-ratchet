@@ -6,14 +6,14 @@
             <div class="col-9">
                 <chat-message-component
                     usertoken="{{ $user->token }}"
-                    allmessages="{{ $messages }}"
+                    allmessages="{{ json_encode($messages) }}"
                     user="{{ $user }}">
                 </chat-message-component>
             </div>
 
             @if(isset($members))
                 <div class="col-3 members-online">
-                    <members-component members="{{ $members }}"></members-component>
+                    <members-component members="{{ json_encode($members) }}"></members-component>
                 </div>
             @endif
         </div>
