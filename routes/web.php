@@ -9,8 +9,6 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
-
 // GoogleAuth routes
 Route::get('/redirect', 'AuthController@redirect');
 Route::get('/callback', 'AuthController@callback');
