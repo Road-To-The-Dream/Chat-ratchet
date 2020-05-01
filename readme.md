@@ -19,6 +19,9 @@ Use composer install
 Rename file .env.example in .env and fill it with your info for db connection
 </li>
 <li>
+Check if you have npm package installed (npm -v)
+</li>
+<li>
 Run the command: (chmod +x bin/install.sh) for setup access to file
 </li>
 <li>
